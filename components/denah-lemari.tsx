@@ -23,6 +23,7 @@ import {
   TrashIcon,
   XIcon,
 } from "./icons";
+import HeroBanner from "./hero-banner";
 
 const formatRupiah = (n: number) => "Rp " + n.toLocaleString("id-ID");
 
@@ -221,34 +222,16 @@ export default function DenahLemari() {
   return (
     <div className="space-y-6">
       {/* ── Banner Header (Tema Merah & Putih Kesbangpol) ─────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-6 text-white shadow-xl shadow-red-600/15">
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-              <ArchiveIcon className="h-3.5 w-3.5 text-white" />
-              <span>Gudang Penyimpanan Fisik Kesbangpol</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-              Denah Lemari & Rak Arsip Fisik
-            </h1>
-            <p className="text-xs sm:text-sm text-red-100 max-w-2xl leading-relaxed">
-              Pemetaan visual posisi ordner dokumen hibah pada 5 lemari dan rak fisik di ruang arsip.
-            </p>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center backdrop-blur-md">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-red-100">Total Berkas</p>
-              <p className="text-2xl font-black text-white">{allDocs.length}</p>
-            </div>
-            <div className="rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-center backdrop-blur-md">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-red-100">Lemari Aktif</p>
-              <p className="text-2xl font-black text-white">5 Unit</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <HeroBanner
+        badgeIcon={<ArchiveIcon className="h-3.5 w-3.5" />}
+        badgeText="Gudang Penyimpanan Fisik Kesbangpol"
+        title="Denah Lemari & Rak Arsip Fisik"
+        description="Pemetaan visual posisi ordner dokumen hibah pada 5 lemari dan rak fisik di ruang arsip."
+        stats={[
+          { label: "Total Berkas", value: allDocs.length },
+          { label: "Lemari Aktif", value: "5 Unit" },
+        ]}
+      />
 
       {/* ── Grid 5 Lemari Cards (Selector) ───────────────────────────── */}
       <div>
