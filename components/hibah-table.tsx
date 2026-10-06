@@ -28,6 +28,7 @@ import DeleteConfirmModal from "./delete-confirm-modal";
 import SearchInput from "./search-input";
 import { TableEmptyRow } from "./empty-state";
 import { formatRupiah } from "@/lib/utils";
+import { AlokasiLemariField } from "./alokasi-lemari-field";
 
 const lemariFilterList = [
   "Semua",
@@ -36,6 +37,7 @@ const lemariFilterList = [
   "Lemari Arsip 03",
   "Lemari Arsip 04",
   "Lemari Arsip Khusus",
+  "Dikosongkan",
 ];
 
 interface PenerimaHibah {
@@ -266,8 +268,8 @@ export default function HibahTable() {
         nominal: numericNominal,
         tahun: currentYear,
         lemariArsip: newLemari,
-        rakArsip: newRak,
-        nomorArsip: newNomor,
+        rakArsip: newLemari === "Dikosongkan" ? "-" : (newRak || "Rak 01"),
+        nomorArsip: newLemari === "Dikosongkan" ? "-" : (newNomor || "No. 01"),
         pic: newPic || undefined,
         noTelp: newNoTelp || undefined,
         fileName,
@@ -316,8 +318,8 @@ export default function HibahTable() {
       instansi: newInstansi,
       bidangId: newBidangId,
       lemariArsip: newLemari,
-      rakArsip: newRak,
-      nomorArsip: newNomor,
+      rakArsip: newLemari === "Dikosongkan" ? "-" : (newRak || "Rak 01"),
+      nomorArsip: newLemari === "Dikosongkan" ? "-" : (newNomor || "No. 01"),
       kategori: docCategory,
       nominal: numericNominal,
       pic: newPic,
@@ -795,62 +797,20 @@ export default function HibahTable() {
                       </div>
                     </div>
 
-                    {/* Alokasi Lemari: Naik ke posisi tempat tujuan bidang teknis sebelumnya */}
-                    <div className="rounded-2xl border border-red-100 bg-red-50/40 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <ArchiveIcon className="h-4 w-4 text-red-600" />
-                        <p className="text-xs font-bold text-zinc-900">Alokasi Lokasi Fisik Penyimpanan Arsip</p>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            1. Lemari Arsip *
-                          </label>
-                          <select
-                            value={newLemari}
-                            onChange={(e) => setNewLemari(e.target.value as LemariArsip)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {LEMARI_OPTIONS.map((opt) => (
-                              <option key={opt.id} value={opt.id}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            2. Posisi Rak *
-                          </label>
-                          <select
-                            value={newRak}
-                            onChange={(e) => setNewRak(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {RAK_OPTIONS.map((rak) => (
-                              <option key={rak} value={rak}>
-                                {rak}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            3. Nomor Berkas / Urut *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Misal: No. 05"
-                            value={newNomor}
-                            onChange={(e) => setNewNomor(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold font-mono text-zinc-900 outline-none focus:border-red-400"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    {/* Alokasi Lemari: Pilihan Diisi / Dikosongkan */}
+                    <AlokasiLemariField
+                      lemari={newLemari}
+                      rak={newRak}
+                      nomor={newNomor}
+                      onChangeLemari={setNewLemari}
+                      onChangeRak={setNewRak}
+                      onChangeNomor={setNewNomor}
+                      defaultLemari={
+                        mode === "bidang"
+                          ? (`Lemari Arsip 0${bidangId}` as LemariArsip)
+                          : "Lemari Arsip 01"
+                      }
+                    />
 
                     {/* Dropdown Pindah Halaman/Form */}
                     <div>
@@ -1014,62 +974,20 @@ export default function HibahTable() {
                       </div>
                     </div>
 
-                    {/* Alokasi Lemari: Lemari, Rak, Nomor */}
-                    <div className="rounded-2xl border border-red-100 bg-red-50/40 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <ArchiveIcon className="h-4 w-4 text-red-600" />
-                        <p className="text-xs font-bold text-zinc-900">Alokasi Lokasi Fisik Penyimpanan Arsip</p>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            1. Lemari Arsip *
-                          </label>
-                          <select
-                            value={newLemari}
-                            onChange={(e) => setNewLemari(e.target.value as LemariArsip)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {LEMARI_OPTIONS.map((opt) => (
-                              <option key={opt.id} value={opt.id}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            2. Posisi Rak *
-                          </label>
-                          <select
-                            value={newRak}
-                            onChange={(e) => setNewRak(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {RAK_OPTIONS.map((rak) => (
-                              <option key={rak} value={rak}>
-                                {rak}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            3. Nomor Berkas / Urut *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Misal: No. 05"
-                            value={newNomor}
-                            onChange={(e) => setNewNomor(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold font-mono text-zinc-900 outline-none focus:border-red-400"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    {/* Alokasi Lemari: Pilihan Diisi / Dikosongkan */}
+                    <AlokasiLemariField
+                      lemari={newLemari}
+                      rak={newRak}
+                      nomor={newNomor}
+                      onChangeLemari={setNewLemari}
+                      onChangeRak={setNewRak}
+                      onChangeNomor={setNewNomor}
+                      defaultLemari={
+                        mode === "bidang"
+                          ? (`Lemari Arsip 0${bidangId}` as LemariArsip)
+                          : "Lemari Arsip 01"
+                      }
+                    />
 
                     {/* Dropdown Pindah Halaman / Form */}
                     <div>
@@ -1224,62 +1142,20 @@ export default function HibahTable() {
                       />
                     </div>
 
-                    {/* Alokasi Lemari: Lemari, Rak, Nomor */}
-                    <div className="rounded-2xl border border-red-100 bg-red-50/40 p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        <ArchiveIcon className="h-4 w-4 text-red-600" />
-                        <p className="text-xs font-bold text-zinc-900">Alokasi Lokasi Fisik Penyimpanan Arsip</p>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            1. Lemari Arsip *
-                          </label>
-                          <select
-                            value={newLemari}
-                            onChange={(e) => setNewLemari(e.target.value as LemariArsip)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {LEMARI_OPTIONS.map((opt) => (
-                              <option key={opt.id} value={opt.id}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            2. Posisi Rak *
-                          </label>
-                          <select
-                            value={newRak}
-                            onChange={(e) => setNewRak(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none focus:border-red-400"
-                          >
-                            {RAK_OPTIONS.map((rak) => (
-                              <option key={rak} value={rak}>
-                                {rak}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1 block text-[11px] font-bold text-zinc-700">
-                            3. Nomor Berkas / Urut *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            placeholder="Misal: No. 05"
-                            value={newNomor}
-                            onChange={(e) => setNewNomor(e.target.value)}
-                            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold font-mono text-zinc-900 outline-none focus:border-red-400"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    {/* Alokasi Lemari: Pilihan Diisi / Dikosongkan */}
+                    <AlokasiLemariField
+                      lemari={newLemari}
+                      rak={newRak}
+                      nomor={newNomor}
+                      onChangeLemari={setNewLemari}
+                      onChangeRak={setNewRak}
+                      onChangeNomor={setNewNomor}
+                      defaultLemari={
+                        mode === "bidang"
+                          ? (`Lemari Arsip 0${bidangId}` as LemariArsip)
+                          : "Lemari Arsip 01"
+                      }
+                    />
 
                     {/* Dropdown Pindah Halaman / Form */}
                     <div>
@@ -1474,8 +1350,8 @@ export default function HibahTable() {
                     kategori: editKategori,
                     nominal: parseFloat(editNominal) || selectedProposal.nominal,
                     lemariArsip: editLemari,
-                    rakArsip: editRak,
-                    nomorArsip: editNomor,
+                    rakArsip: editLemari === "Dikosongkan" ? "-" : (editRak || "Rak 01"),
+                    nomorArsip: editLemari === "Dikosongkan" ? "-" : (editNomor || "No. 01"),
                     pic: editPic,
                     noTelp: editNoTelp,
                     catatan: editCatatan,
@@ -1528,46 +1404,16 @@ export default function HibahTable() {
                     </div>
                   </div>
 
-                  {/* Lokasi Fisik */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-700 mb-1">Lemari Arsip *</label>
-                      <select
-                        value={editLemari}
-                        onChange={(e) => setEditLemari(e.target.value as LemariArsip)}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-red-400"
-                      >
-                        {LEMARI_OPTIONS.map((opt) => (
-                          <option key={opt.id} value={opt.id}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-700 mb-1">Posisi Rak *</label>
-                      <select
-                        value={editRak}
-                        onChange={(e) => setEditRak(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs font-semibold outline-none focus:border-red-400"
-                      >
-                        {RAK_OPTIONS.map((rak) => (
-                          <option key={rak} value={rak}>
-                            {rak}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-zinc-700 mb-1">Nomor Berkas / Urut *</label>
-                      <input
-                        required
-                        value={editNomor}
-                        onChange={(e) => setEditNomor(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs font-bold font-mono outline-none focus:border-red-400"
-                      />
-                    </div>
-                  </div>
+                  {/* Lokasi Fisik: Pilihan Diisi / Dikosongkan */}
+                  <AlokasiLemariField
+                    lemari={editLemari}
+                    rak={editRak}
+                    nomor={editNomor}
+                    onChangeLemari={setEditLemari}
+                    onChangeRak={setEditRak}
+                    onChangeNomor={setEditNomor}
+                    defaultLemari="Lemari Arsip 01"
+                  />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <div>
@@ -1652,12 +1498,81 @@ export default function HibahTable() {
               {/* Quick Lemari & Rak Switcher Inside Detail */}
               {!readOnly && (
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <p className="font-bold text-zinc-900 text-xs">Pindahkan Lokasi Fisik Lemari & Rak</p>
                     <p className="text-[11px] text-zinc-500">
                       Ubah lokasi lemari arsip, nomor rak, dan nomor berkas penyimpanan dokumen ini secara instan.
                     </p>
+                  </div>
+
+                  {/* Toggle Cepat Diisi vs Dikosongkan */}
+                  <div className="flex items-center rounded-xl bg-white p-1 border border-zinc-200/90 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const targetL = "Lemari Arsip 01";
+                        handleChangeLokasi(
+                          selectedProposal.id,
+                          targetL,
+                          "Rak 01",
+                          "No. 01",
+                          selectedProposal.name
+                        );
+                        setSelectedProposal({
+                          ...selectedProposal,
+                          lemariArsip: targetL,
+                          rakArsip: "Rak 01",
+                          nomorArsip: "No. 01",
+                        });
+                      }}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                        selectedProposal.lemariArsip !== "Dikosongkan"
+                          ? "bg-emerald-600 text-white shadow-xs"
+                          : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          selectedProposal.lemariArsip !== "Dikosongkan"
+                            ? "bg-white"
+                            : "bg-emerald-500"
+                        }`}
+                      />
+                      Diisi (Ada Lemari)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleChangeLokasi(
+                          selectedProposal.id,
+                          "Dikosongkan",
+                          "-",
+                          "-",
+                          selectedProposal.name
+                        );
+                        setSelectedProposal({
+                          ...selectedProposal,
+                          lemariArsip: "Dikosongkan",
+                          rakArsip: "-",
+                          nomorArsip: "-",
+                        });
+                      }}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                        selectedProposal.lemariArsip === "Dikosongkan"
+                          ? "bg-amber-600 text-white shadow-xs"
+                          : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          selectedProposal.lemariArsip === "Dikosongkan"
+                            ? "bg-white"
+                            : "bg-amber-500"
+                        }`}
+                      />
+                      Dikosongkan
+                    </button>
                   </div>
                 </div>
 
@@ -1668,17 +1583,29 @@ export default function HibahTable() {
                       value={selectedProposal.lemariArsip}
                       onChange={(e) => {
                         const newL = e.target.value as LemariArsip;
+                        const newR = newL === "Dikosongkan" ? "-" : (selectedProposal.rakArsip && selectedProposal.rakArsip !== "-" ? selectedProposal.rakArsip : "Rak 01");
+                        const newN = newL === "Dikosongkan" ? "-" : (selectedProposal.nomorArsip && selectedProposal.nomorArsip !== "-" ? selectedProposal.nomorArsip : "No. 01");
                         handleChangeLokasi(
                           selectedProposal.id,
                           newL,
-                          selectedProposal.rakArsip || "Rak 01",
-                          selectedProposal.nomorArsip || "No. 01",
+                          newR,
+                          newN,
                           selectedProposal.name
                         );
-                        setSelectedProposal({ ...selectedProposal, lemariArsip: newL });
+                        setSelectedProposal({
+                          ...selectedProposal,
+                          lemariArsip: newL,
+                          rakArsip: newR,
+                          nomorArsip: newN,
+                        });
                       }}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none shadow-xs"
+                      className={`w-full rounded-xl border px-3 py-2 text-xs font-bold outline-none shadow-xs transition ${
+                        selectedProposal.lemariArsip === "Dikosongkan"
+                          ? "border-amber-200 bg-amber-50/50 text-amber-900"
+                          : "border-zinc-200 bg-white text-zinc-800"
+                      }`}
                     >
+                      <option value="Dikosongkan">— Dikosongkan (Tanpa Lemari) —</option>
                       {LEMARI_OPTIONS.map((opt) => (
                         <option key={opt.id} value={opt.id}>
                           {opt.label}
@@ -1689,32 +1616,48 @@ export default function HibahTable() {
 
                   <div>
                     <span className="text-[11px] font-bold text-zinc-600 block mb-1">Pilih Rak:</span>
-                    <select
-                      value={selectedProposal.rakArsip || "Rak 01"}
-                      onChange={(e) => {
-                        const newR = e.target.value;
-                        handleChangeLokasi(
-                          selectedProposal.id,
-                          selectedProposal.lemariArsip,
-                          newR,
-                          selectedProposal.nomorArsip || "No. 01",
-                          selectedProposal.name
-                        );
-                        setSelectedProposal({ ...selectedProposal, rakArsip: newR });
-                      }}
-                      className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none shadow-xs"
-                    >
-                      {RAK_OPTIONS.map((rak) => (
-                        <option key={rak} value={rak}>
-                          {rak}
-                        </option>
-                      ))}
-                    </select>
+                    {selectedProposal.lemariArsip === "Dikosongkan" ? (
+                      <input
+                        type="text"
+                        disabled
+                        value="— (Dikosongkan)"
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-100/80 px-3 py-2 text-xs font-medium text-zinc-400 outline-none cursor-not-allowed shadow-xs"
+                      />
+                    ) : (
+                      <select
+                        value={selectedProposal.rakArsip || "Rak 01"}
+                        onChange={(e) => {
+                          const newR = e.target.value;
+                          handleChangeLokasi(
+                            selectedProposal.id,
+                            selectedProposal.lemariArsip,
+                            newR,
+                            selectedProposal.nomorArsip || "No. 01",
+                            selectedProposal.name
+                          );
+                          setSelectedProposal({ ...selectedProposal, rakArsip: newR });
+                        }}
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold text-zinc-800 outline-none shadow-xs"
+                      >
+                        {RAK_OPTIONS.map((rak) => (
+                          <option key={rak} value={rak}>
+                            {rak}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   <div>
                     <span className="text-[11px] font-bold text-zinc-600 block mb-1">Nomor Berkas:</span>
-                    <div className="flex gap-1.5">
+                    {selectedProposal.lemariArsip === "Dikosongkan" ? (
+                      <input
+                        type="text"
+                        disabled
+                        value="—"
+                        className="w-full rounded-xl border border-zinc-200 bg-zinc-100/80 px-3 py-2 text-xs font-medium text-zinc-400 outline-none cursor-not-allowed shadow-xs"
+                      />
+                    ) : (
                       <input
                         type="text"
                         defaultValue={selectedProposal.nomorArsip || "No. 01"}
@@ -1732,9 +1675,20 @@ export default function HibahTable() {
                         className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-bold font-mono text-zinc-900 outline-none shadow-xs"
                         placeholder="No. 01"
                       />
-                    </div>
+                    )}
                   </div>
                 </div>
+
+                {selectedProposal.lemariArsip === "Dikosongkan" && (
+                  <div className="flex items-center gap-2 rounded-xl border border-amber-200/90 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[10px] font-bold">
+                      ℹ
+                    </span>
+                    <span>
+                      Status lokasi berkas ini saat ini <strong>Dikosongkan</strong> (belum disimpan di rak atau lemari fisik manapun).
+                    </span>
+                  </div>
+                )}
               </div>
               )}
 

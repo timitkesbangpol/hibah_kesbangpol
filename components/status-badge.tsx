@@ -61,6 +61,36 @@ export function LokasiArsipBadge({
   nomor?: string;
   compact?: boolean;
 }) {
+  const isKosong =
+    !lemari ||
+    lemari === "Dikosongkan" ||
+    lemari.toLowerCase().includes("kosong") ||
+    lemari.toLowerCase().includes("tanpa");
+
+  if (isKosong) {
+    if (compact) {
+      return (
+        <span
+          title="Lokasi fisik belum dialokasikan / lemari dikosongkan"
+          className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-500 ring-1 ring-inset ring-zinc-300/80 whitespace-nowrap shrink-0"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-zinc-400"></span>
+          <span>Dikosongkan</span>
+        </span>
+      );
+    }
+
+    return (
+      <span
+        title="Lokasi fisik belum dialokasikan / lemari dikosongkan"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 ring-1 ring-inset ring-zinc-300/80 whitespace-nowrap shrink-0"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400"></span>
+        <span>Dikosongkan</span>
+      </span>
+    );
+  }
+
   const lemariColor = statusStyles[lemari] ?? "bg-zinc-100 text-zinc-700 ring-zinc-300";
   
   // Format kode ringkas: L.01, R.01, #01

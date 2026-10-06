@@ -7,7 +7,8 @@ export type LemariArsip =
   | "Lemari Arsip 02"
   | "Lemari Arsip 03"
   | "Lemari Arsip 04"
-  | "Lemari Arsip Khusus";
+  | "Lemari Arsip Khusus"
+  | "Dikosongkan";
 
 export const LEMARI_OPTIONS: { id: LemariArsip; label: string; bidangId: BidangId | 0; desc: string }[] = [
   { id: "Lemari Arsip 01", label: "Lemari Arsip 01", bidangId: 1, desc: "Ideologi, Wawasan Kebangsaan & Bela Negara" },
@@ -93,6 +94,7 @@ interface HibahContextType {
   addArsip: (arsip: Omit<ArsipItem, "id">) => Promise<void>;
   updateArsipLokasi: (id: string, newLemari: LemariArsip, newRak?: string, newNomor?: string) => void;
   deleteArsip: (id: string) => Promise<void>;
+  kosongkanLemari: (targetLemari: LemariArsip) => Promise<void>;
   isOlderThan8Years: (tahunStr: string | number) => boolean;
   isOlderThan5Years: (tahunStr: string | number) => boolean;
   refreshData: () => Promise<void>;
@@ -525,6 +527,67 @@ export function HibahProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const kosongkanLemari = async (targetLemari: LemariArsip) => {
+    setProposals((prev) =>
+      prev.map((item) =>
+        item.lemariArsip === targetLemari
+          ? { ...item, lemariArsip: "Dikosongkan", rakArsip: "-", nomorArsip: "-" }
+          : item
+      )
+    );
+    setArsipList((prev) =>
+      prev.map((item) =>
+        item.lemariArsip === targetLemari
+          ? { ...item, lemariArsip: "Dikosongkan", rakArsip: "-", nomorArsip: "-" }
+          : item
+      )
+    );
+
+    const targetProposals = proposals.filter((p) => p.lemariArsip === targetLemari);
+    for (const p of targetProposals) {
+      fetch("/api/hibah", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: p.dbId || p.id,
+          lemari_arsip: "Dikosongkan",
+          posisi_rak: "-",
+          nomor_berkas: "-",
+          jenis_dokumen_arsip: p.name,
+          jenis_dokume_arsip: p.name,
+          nominal_diajukan: String(p.nominal),
+          lembaga: p.instansi,
+          tujuan_bidang_teknis: String(p.bidangId),
+          kategori_program: p.kategori,
+          nama_penanggung_jawab: p.pic,
+          tahun_anggaran: p.tahun,
+        }),
+      }).catch((err) => console.error("Gagal kosongkan lemari proposal:", err));
+    }
+
+    const targetArsip = arsipList.filter((a) => a.lemariArsip === targetLemari);
+    for (const a of targetArsip) {
+      if (a.dbId) {
+        fetch("/api/arsip", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: a.dbId,
+            lemari_arsip: "Dikosongkan",
+            posisi_rak: "-",
+            nomor_berkas_urut: "-",
+            jenis_dokumen_arsip: a.jenis,
+            judul_berkas_dokumen: a.judul,
+            nominal_anggaran: a.nominal,
+            instansi_penerima: a.instansi,
+            bidang_pengampu: String(a.bidangId),
+            tahun_anggaran: a.tahun,
+          }),
+        }).catch((err) => console.error("Gagal kosongkan lemari arsip:", err));
+      }
+    }
+  };
+
   return (
     <HibahContext.Provider
       value={{
@@ -539,6 +602,7 @@ export function HibahProvider({ children }: { children: React.ReactNode }) {
         addArsip,
         updateArsipLokasi,
         deleteArsip,
+        kosongkanLemari,
         isOlderThan8Years,
         isOlderThan5Years,
         refreshData,
