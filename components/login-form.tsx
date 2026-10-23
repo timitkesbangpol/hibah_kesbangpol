@@ -29,6 +29,10 @@ export default function LoginForm() {
   const [verifyError, setVerifyError] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+  const [isSimulated, setIsSimulated] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState("");
 
   // Efek khusus untuk nge-render Turnstile secara paksa begitu elemen div-nya siap di DOM
   useEffect(() => {
@@ -51,7 +55,16 @@ export default function LoginForm() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Timer hitung mundur untuk kirim ulang kode OTP
+  useEffect(() => {
+    if (!showVerify || resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [showVerify, resendCountdown]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -71,25 +84,114 @@ export default function LoginForm() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.error || "Gagal mengirimkan kode OTP.");
+        setLoading(false);
+        return;
+      }
+
+      setIsSimulated(Boolean(data.simulated));
       setVerifyCode("");
       setVerifyError("");
+      setResendSuccess("");
+      setResendCountdown(60);
       setShowVerify(true);
-    }, 600);
+    } catch {
+      setError("Terjadi kesalahan koneksi saat meminta kode OTP.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerify = (e: React.FormEvent) => {
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0 || isResending) return;
+    setIsResending(true);
+    setVerifyError("");
+    setResendSuccess("");
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setVerifyError(data.error || "Gagal mengirim ulang OTP.");
+      } else {
+        setIsSimulated(Boolean(data.simulated));
+        setResendCountdown(60);
+        setResendSuccess("Kode OTP baru berhasil dikirim ulang ke email Anda!");
+        setTimeout(() => setResendSuccess(""), 6000);
+      }
+    } catch {
+      setVerifyError("Koneksi gagal saat mengirim ulang kode OTP.");
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanCode = verifyCode.trim();
+
+    if (!cleanCode || cleanCode.length !== 6) {
+      setVerifyError("Silakan masukkan 6 digit kode OTP.");
+      return;
+    }
+
     setVerifyError("");
     setVerifying(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          otp: cleanCode,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setVerifyError(data.error || "Kode OTP tidak valid atau telah kadaluarsa.");
+        setVerifying(false);
+        return;
+      }
+
+      const cleanEmail = email.trim().toLowerCase();
+      const legacyAliases: Record<string, string> = {
+        "admin@kesbangpol.go.id": "admin",
+        "kaban@kesbangpol.go.id": "kaban",
+        "bidang1@kesbangpol.go.id": "bidang1",
+        "bidang2@kesbangpol.go.id": "bidang2",
+        "bidang3@kesbangpol.go.id": "bidang3",
+        "bidang4@kesbangpol.go.id": "bidang4",
+      };
+
       const matched =
-        accounts.find((a) => a.email.toLowerCase() === email.trim().toLowerCase()) ||
-        accounts[0];
+        accounts.find((a) => a.email.toLowerCase() === cleanEmail) ||
+        (legacyAliases[cleanEmail] ? accounts.find((a) => a.id === legacyAliases[cleanEmail]) : null);
+
+      if (!matched) {
+        setVerifyError("Akun tidak terdaftar dalam hak akses sistem. Silakan hubungi Administrator.");
+        setVerifying(false);
+        return;
+      }
+
       const acc = loginWithAccount(matched.id);
       router.push(`/portal/u/${acc.userIndex || "0"}/${acc.sessionToken}/${acc.rolePath}/Beranda`);
-    }, 600);
+    } catch {
+      setVerifyError("Terjadi gangguan jaringan saat verifikasi kode.");
+      setVerifying(false);
+    }
   };
 
   const inputClass =
@@ -247,7 +349,34 @@ export default function LoginForm() {
               <span className="font-bold text-zinc-800">{email || "email Anda"}</span>
             </p>
 
-            <form onSubmit={handleVerify} noValidate className="mt-6 space-y-4">
+            {/* Peringatan & Tips Cek Folder Spam */}
+            <div className="mt-3.5 rounded-2xl border border-amber-200/90 bg-amber-50/80 p-3 text-left">
+              <div className="flex items-start gap-2.5">
+                <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                <div className="text-[11px] leading-relaxed text-amber-900">
+                  <span className="font-bold text-amber-950">Email belum masuk?</span>
+                  <p className="mt-0.5 text-amber-900/90">
+                    Jika tidak ada di <strong>Kotak Masuk Utama</strong>, silakan periksa folder <strong className="underline decoration-amber-500 font-bold text-amber-950">Spam</strong> atau tab <strong>Promosi</strong> di Gmail Anda.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Banner Sukses Kirim Ulang */}
+            {resendSuccess && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-xs font-semibold text-emerald-800">
+                <span className="text-emerald-600 font-bold">✓</span>
+                <span>{resendSuccess}</span>
+              </div>
+            )}
+
+            {isSimulated && (
+              <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-800 leading-tight">
+                <span className="font-semibold">⚠️ Mode Uji Coba:</span> Kredensial Gmail belum dimasukkan di <code className="rounded bg-amber-100 px-1 font-mono text-[10px]">.env.local</code>. Kode OTP dapat dilihat di terminal konsol server.
+              </div>
+            )}
+
+            <form onSubmit={handleVerify} noValidate className="mt-4 space-y-4">
               <input
                 type="text"
                 inputMode="numeric"
@@ -276,6 +405,37 @@ export default function LoginForm() {
                   "Verifikasi & Masuk"
                 )}
               </button>
+
+              {/* Bagian Kirim Ulang OTP */}
+              <div className="pt-2 text-center border-t border-zinc-100">
+                <p className="text-[11px] text-zinc-500 mb-1.5">
+                  Masih belum menerima kode verifikasi?
+                </p>
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendCountdown > 0 || isResending}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:text-zinc-400 disabled:hover:bg-transparent"
+                >
+                  {isResending ? (
+                    <>
+                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                      <span>Mengirim ulang kode...</span>
+                    </>
+                  ) : resendCountdown > 0 ? (
+                    <span className="font-medium text-zinc-500">
+                      Kirim ulang dalam <strong className="text-red-600 font-bold">{resendCountdown} detik</strong>
+                    </span>
+                  ) : (
+                    <>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.2} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                      </svg>
+                      <span className="underline">Kirim Ulang Kode OTP Sekarang</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>

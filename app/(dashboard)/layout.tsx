@@ -8,11 +8,12 @@ import DashboardShell from "../../components/dashboard-shell";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isLoggedIn, getUrl } = useMode();
+  const { isLoggedIn, authInitialized, getUrl } = useMode();
 
   useEffect(() => {
+    if (!authInitialized) return;
     if (!isLoggedIn) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
@@ -22,7 +23,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const targetSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
       router.replace(getUrl(targetSlug || "Beranda"));
     }
-  }, [pathname, isLoggedIn, router, getUrl]);
+  }, [pathname, isLoggedIn, authInitialized, router, getUrl]);
+
+  if (!authInitialized || !isLoggedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white font-poppins">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-8 w-8 animate-spin rounded-full border-3 border-red-500 border-t-transparent" />
+          <p className="text-xs text-slate-300">Memeriksa hak akses sistem...</p>
+        </div>
+      </div>
+    );
+  }
 
   return <DashboardShell>{children}</DashboardShell>;
 }

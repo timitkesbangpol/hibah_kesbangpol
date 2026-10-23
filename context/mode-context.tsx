@@ -34,11 +34,11 @@ export const generateSecureToken = (length = 28): string => {
 export const accounts: UserAccount[] = [
   {
     id: "admin",
-    name: "Admin Kesbangpol",
-    email: "admin@kesbangpol.go.id",
+    name: "Sekre Kesbangpol",
+    email: "kesbangplsekre@gmail.com",
     mode: "admin",
-    roleLabel: "Administrator Utama",
-    initials: "AD",
+    roleLabel: "Administrator Utama (Sekretariat)",
+    initials: "SK",
     gradient: "from-emerald-500 to-teal-600",
     sessionToken: "s_W8E9iFrFqoIw3NE7pL2xZbY0kM5v",
     rolePath: "Admin",
@@ -47,7 +47,7 @@ export const accounts: UserAccount[] = [
   {
     id: "kaban",
     name: "Kepala Badan (Kaban)",
-    email: "kaban@kesbangpol.go.id",
+    email: "kesbangpolkepalabadan@gmail.com",
     mode: "kaban",
     roleLabel: "Kepala Badan — Akses Lihat & Unduh",
     initials: "KB",
@@ -59,7 +59,7 @@ export const accounts: UserAccount[] = [
   {
     id: "bidang1",
     name: "Staff Verifikator Bidang 1",
-    email: "bidang1@kesbangpol.go.id",
+    email: "kesbangpolbidang01@gmail.com",
     mode: "bidang",
     bidangId: 1,
     bidangName: "Bidang Ideologi, Wawasan Kebangsaan & Karakter Bangsa",
@@ -73,7 +73,7 @@ export const accounts: UserAccount[] = [
   {
     id: "bidang2",
     name: "Staff Verifikator Bidang 2",
-    email: "bidang2@kesbangpol.go.id",
+    email: "kesbangpolbidang02@gmail.com",
     mode: "bidang",
     bidangId: 2,
     bidangName: "Bidang Politik Dalam Negeri & Organisasi Kemasyarakatan",
@@ -87,7 +87,7 @@ export const accounts: UserAccount[] = [
   {
     id: "bidang3",
     name: "Staff Verifikator Bidang 3",
-    email: "bidang3@kesbangpol.go.id",
+    email: "kesbangpolbidang03@gmail.com",
     mode: "bidang",
     bidangId: 3,
     bidangName: "Bidang Ketahanan Ekonomi, Sosbud & Agama",
@@ -101,7 +101,7 @@ export const accounts: UserAccount[] = [
   {
     id: "bidang4",
     name: "Staff Verifikator Bidang 4",
-    email: "bidang4@kesbangpol.go.id",
+    email: "kesbangpolbidang04@gmail.com",
     mode: "bidang",
     bidangId: 4,
     bidangName: "Bidang Kewaspadaan Nasional & Penanganan Konflik",
@@ -153,6 +153,7 @@ interface ModeContextType {
   bidangId: BidangId;
   currentUser: UserAccount;
   isLoggedIn: boolean;
+  authInitialized: boolean;
   loginWithAccount: (accountId: string) => UserAccount;
   logout: () => void;
   setMode: (mode: Mode) => void;
@@ -168,7 +169,8 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<Mode>("admin");
   const [bidangId, setBidangIdState] = useState<BidangId>(1);
   const [currentUser, setCurrentUser] = useState<UserAccount>(accounts[0]);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [authInitialized, setAuthInitialized] = useState<boolean>(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -177,24 +179,24 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
     const savedAccount = localStorage.getItem("kesbangpol_account_id");
     const savedToken = localStorage.getItem("kesbangpol_session_token");
 
-    if (savedLoggedIn === "false") {
-      setIsLoggedIn(false);
-    } else {
-      setIsLoggedIn(true);
-    }
-
-    if (savedAccount) {
+    if (savedLoggedIn === "true" && savedAccount && savedToken) {
       const found = accounts.find((a) => a.id === savedAccount);
       if (found) {
         const userWithToken: UserAccount = {
           ...found,
-          sessionToken: savedToken || found.sessionToken,
+          sessionToken: savedToken,
         };
         setCurrentUser(userWithToken);
         setModeState(found.mode);
         if (found.bidangId) setBidangIdState(found.bidangId);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
       }
+    } else {
+      setIsLoggedIn(false);
     }
+    setAuthInitialized(true);
   }, []);
 
   const loginWithAccount = (accountId: string): UserAccount => {
@@ -215,6 +217,7 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("kesbangpol_account_id", found.id);
       localStorage.setItem("kesbangpol_session_token", dynamicRandomToken);
       localStorage.setItem("kesbangpol_is_logged_in", "true");
+      document.cookie = `kesbangpol_session=${dynamicRandomToken}; path=/; max-age=86400; SameSite=Lax`;
     }
 
     return activeUser;
@@ -224,7 +227,9 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
     setIsLoggedIn(false);
     if (typeof window !== "undefined") {
       localStorage.setItem("kesbangpol_is_logged_in", "false");
+      localStorage.removeItem("kesbangpol_account_id");
       localStorage.removeItem("kesbangpol_session_token");
+      document.cookie = "kesbangpol_session=; path=/; max-age=0; SameSite=Lax";
     }
   };
 
@@ -262,7 +267,8 @@ export function ModeProvider({ children }: { children: React.ReactNode }) {
         mode,
         bidangId,
         currentUser: mounted ? currentUser : accounts[0],
-        isLoggedIn: mounted ? isLoggedIn : true,
+        isLoggedIn: mounted ? isLoggedIn : false,
+        authInitialized,
         loginWithAccount,
         logout,
         setMode,

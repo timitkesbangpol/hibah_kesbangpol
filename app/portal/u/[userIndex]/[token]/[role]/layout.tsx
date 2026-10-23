@@ -14,24 +14,25 @@ export default function EnterprisePortalLayout({
 }) {
   const params = useParams();
   const router = useRouter();
-  const { currentUser, isLoggedIn, verifyAccess, getHomeUrl } = useMode();
+  const { currentUser, isLoggedIn, authInitialized, verifyAccess, getHomeUrl } = useMode();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   const tokenParam = Array.isArray(params.token) ? params.token[0] : params.token || "";
   const roleParam = Array.isArray(params.role) ? params.role[0] : params.role || "";
 
   useEffect(() => {
+    if (!authInitialized) return;
     if (!isLoggedIn) {
-      router.push("/login");
+      router.replace("/login");
       return;
     }
 
     // Verifikasi keamanan URL: token & role harus cocok dengan sesi akun yang aktif
     const valid = verifyAccess(tokenParam, roleParam);
     setIsAuthorized(valid);
-  }, [tokenParam, roleParam, isLoggedIn, currentUser, verifyAccess, router]);
+  }, [tokenParam, roleParam, isLoggedIn, authInitialized, currentUser, verifyAccess, router]);
 
-  if (isAuthorized === null) {
+  if (!authInitialized || isAuthorized === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-xs font-semibold text-zinc-400">
         Memverifikasi sesi portal terenkripsi...
