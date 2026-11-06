@@ -12,9 +12,12 @@ import {
 import {
   ArchiveIcon,
   BuildingIcon,
+  CheckCircleIcon,
+  ChevronRightIcon,
   DocumentIcon,
   DownloadIcon,
   EyeIcon,
+  FolderIcon,
   MoneyIcon,
   SearchIcon,
   TrashIcon,
@@ -217,7 +220,7 @@ export default function DenahLemari() {
   const currentInfo = LEMARI_DETAILS[selectedLemari];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* ── Banner Header (Tema Merah & Putih Kesbangpol) ─────────── */}
       <HeroBanner
         badgeIcon={<ArchiveIcon className="h-3.5 w-3.5" />}
@@ -226,20 +229,22 @@ export default function DenahLemari() {
         description="Pemetaan visual posisi ordner dokumen hibah pada 5 lemari dan rak fisik di ruang arsip."
         stats={[
           { label: "Total Berkas", value: allDocs.length },
-          { label: "Lemari Aktif", value: `${visibleLemariOptions.length} Unit` },
+          { label: "Lemari Aktif", value: "5 Unit" },
         ]}
       />
 
+      {/* ── Grid 5 Lemari Cards (Selector) ───────────────────────────── */}
       <div>
-        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-base font-bold tracking-tight text-zinc-900">Pilih lemari penyimpanan</h2>
-            <p className="mt-1 text-sm text-zinc-500">Pilih satu lemari untuk melihat posisi dan detail berkas.</p>
-          </div>
-          <span className="text-xs font-medium text-zinc-400">{visibleLemariOptions.length} lokasi penyimpanan</span>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-500">
+            Pilih Lemari Penyimpanan
+          </h2>
+          <span className="text-xs text-zinc-400">
+            Klik lemari untuk melihat isi rak fisik
+          </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
           {visibleLemariOptions.map((lem) => {
             const isSelected = selectedLemari === lem.id;
             const details = LEMARI_DETAILS[lem.id];
@@ -253,46 +258,41 @@ export default function DenahLemari() {
                   setSelectedLemari(lem.id);
                   setSelectedRak("Semua");
                 }}
-                aria-pressed={isSelected}
-                className={`group flex min-h-52 flex-col justify-between rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/20 ${
+                className={`relative flex flex-col justify-between rounded-2xl border p-4 text-left transition-all duration-200 ${
                   isSelected
-                    ? "border-violet-300 bg-violet-50/60 shadow-md shadow-violet-950/5 ring-1 ring-violet-200"
-                    : "border-zinc-200 bg-white hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
+                    ? `border-red-500 bg-white shadow-lg ring-2 ring-red-500/20 scale-[1.02]`
+                    : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-sm"
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
-                        isSelected ? "bg-violet-700 text-white shadow-md shadow-violet-700/20" : "bg-zinc-100 text-zinc-600 group-hover:bg-violet-100 group-hover:text-violet-700"
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl font-black text-sm shadow-xs ${
+                        isSelected ? "bg-red-600 text-white" : "bg-zinc-100 text-zinc-700"
                       }`}
                     >
                       <ArchiveIcon className="h-5 w-5" />
                     </div>
                     <span
-                      className={`rounded-full border px-2.5 py-1 text-[10px] font-bold ${details.bgBadge}`}
+                      className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${details.bgBadge}`}
                     >
                       {details.bidang}
                     </span>
                   </div>
 
-                  <h3 className="mt-4 text-sm font-bold leading-snug text-zinc-900">
+                  <h3 className="mt-3 text-sm font-bold text-zinc-900 leading-snug">
                     {lem.label}
                   </h3>
-                  <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                  <p className="mt-1 text-[11px] text-zinc-400 line-clamp-2 leading-relaxed">
                     {details.deskripsi}
                   </p>
                 </div>
 
-                <div className="mt-4 border-t border-zinc-200/80 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-zinc-500">Berkas tersimpan</span>
-                    <span className="text-sm font-bold text-zinc-900">{stats.count}</span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-zinc-500">
-                    <MoneyIcon className="h-3.5 w-3.5 text-violet-500" />
-                    <span>{formatRupiah(stats.nominal)}</span>
-                  </div>
+                <div className="mt-4 border-t border-zinc-100 pt-3 flex items-baseline justify-between">
+                  <span className="text-xs font-semibold text-zinc-500">Isi Berkas:</span>
+                  <span className="text-sm font-black text-zinc-900">
+                    {stats.count} Dokumen
+                  </span>
                 </div>
               </button>
             );
@@ -309,44 +309,39 @@ export default function DenahLemari() {
                   setSelectedLemari("Dikosongkan");
                   setSelectedRak("Semua");
                 }}
-                aria-pressed={isKosongSelected}
-                className={`group flex min-h-52 flex-col justify-between rounded-2xl border p-4 text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/20 ${
+                className={`relative flex flex-col justify-between rounded-2xl border p-4 text-left transition-all duration-200 ${
                   isKosongSelected
-                    ? "border-amber-300 bg-amber-50/60 shadow-md shadow-amber-950/5 ring-1 ring-amber-200"
-                    : "border-dashed border-zinc-300 bg-white hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-md"
+                    ? "border-amber-500 bg-amber-50/20 shadow-lg ring-2 ring-amber-500/20 scale-[1.02]"
+                    : "border-dashed border-zinc-300 bg-zinc-50/50 hover:border-zinc-400 hover:bg-white hover:shadow-sm"
                 }`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
-                        isKosongSelected ? "bg-amber-600 text-white shadow-md shadow-amber-600/20" : "bg-zinc-100 text-zinc-600 group-hover:bg-amber-100 group-hover:text-amber-700"
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl font-black text-sm shadow-xs ${
+                        isKosongSelected ? "bg-amber-600 text-white" : "bg-zinc-200 text-zinc-600"
                       }`}
                     >
                       <ArchiveIcon className="h-5 w-5" />
                     </div>
-                    <span className="rounded-full border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-bold text-amber-800">
+                    <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
                       Tanpa Lemari
                     </span>
                   </div>
 
-                  <h3 className="mt-4 text-sm font-bold leading-snug text-zinc-900">
+                  <h3 className="mt-3 text-sm font-bold text-zinc-900 leading-snug">
                     Dikosongkan
                   </h3>
-                  <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                  <p className="mt-1 text-[11px] text-zinc-500 line-clamp-2 leading-relaxed">
                     Berkas belum dialokasikan ke lemari fisik
                   </p>
                 </div>
 
-                <div className="mt-4 border-t border-zinc-200/80 pt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-zinc-500">Berkas tersimpan</span>
-                    <span className="text-sm font-bold text-amber-700">{kStats.count}</span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-zinc-500">
-                    <MoneyIcon className="h-3.5 w-3.5 text-amber-500" />
-                    <span>{formatRupiah(kStats.nominal)}</span>
-                  </div>
+                <div className="mt-4 border-t border-zinc-200/60 pt-3 flex items-baseline justify-between">
+                  <span className="text-xs font-semibold text-zinc-500">Isi Berkas:</span>
+                  <span className="text-sm font-black text-amber-700">
+                    {kStats.count} Dokumen
+                  </span>
                 </div>
               </button>
             );
@@ -354,20 +349,22 @@ export default function DenahLemari() {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm shadow-zinc-950/[0.03]">
-        <div className="flex flex-col justify-between gap-5 border-b border-zinc-100 bg-zinc-50/70 p-5 sm:p-6 lg:flex-row lg:items-center">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-violet-700 text-white shadow-md shadow-violet-700/20">
+      {/* ── Detail Lemari yang Dipilih & Rak Explorer ────────────────── */}
+      <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm overflow-hidden">
+        {/* Lemari Selected Header Bar */}
+        <div className="border-b border-zinc-100 bg-gradient-to-r from-zinc-50 via-white to-zinc-50 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white shadow-md shadow-red-600/25">
               <ArchiveIcon className="h-6 w-6" />
             </div>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-bold tracking-tight text-zinc-900">{currentInfo.title}</h2>
-                <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${currentInfo.bgBadge}`}>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-black text-zinc-900">{currentInfo.title}</h2>
+                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${currentInfo.bgBadge}`}>
                   {currentInfo.bidang}
                 </span>
               </div>
-              <p className="mt-1 text-sm leading-relaxed text-zinc-500">{currentInfo.deskripsi}</p>
+              <p className="text-xs text-zinc-500 mt-0.5">{currentInfo.deskripsi}</p>
             </div>
           </div>
 
@@ -386,7 +383,7 @@ export default function DenahLemari() {
                     await kosongkanLemari(selectedLemari);
                   }
                 }}
-                className="inline-flex h-11 items-center gap-1.5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 text-xs font-semibold text-amber-800 transition hover:border-amber-300 hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-500/15"
+                className="inline-flex items-center gap-1.5 h-10 rounded-xl border border-amber-300 bg-amber-50 px-3.5 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-2xs"
                 title="Kosongkan seluruh lemari ini"
               >
                 <TrashIcon className="h-3.5 w-3.5 text-amber-600" />
@@ -400,7 +397,7 @@ export default function DenahLemari() {
                 value={selectedRak}
                 onChange={(e) => setSelectedRak(e.target.value)}
                 aria-label="Pilih Rak Fisik"
-                className="h-11 min-w-0 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-700 outline-none transition hover:border-zinc-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10"
+                className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-700 outline-none transition focus:border-red-500"
               >
                 <option value="Semua">Semua Rak (Rak 01 - 05)</option>
                 {RAK_OPTIONS.map((r) => (
@@ -411,31 +408,31 @@ export default function DenahLemari() {
               </select>
             )}
 
+            {/* Search Input */}
             <div className="relative">
-              <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+              <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Cari berkas arsip"
                 placeholder={
                   selectedLemari === "Dikosongkan"
                     ? "Cari berkas tanpa lemari..."
                     : "Cari berkas di lemari ini..."
                 }
-                className="h-11 w-full rounded-xl border border-zinc-200 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-zinc-400 hover:border-zinc-300 focus:border-violet-500 focus:ring-4 focus:ring-violet-500/10"
+                className="h-10 w-52 sm:w-60 rounded-xl border border-zinc-200 bg-white pl-9 pr-4 text-xs outline-none transition focus:border-red-500 focus:ring-4 focus:ring-red-500/10"
               />
             </div>
           </div>
         </div>
 
         {/* Rak Physical Shelving Layout / Dikosongkan Layout */}
-        <div className="space-y-4 p-4 sm:p-6">
+        <div className="p-5 sm:p-6 space-y-6">
           {selectedLemari === "Dikosongkan" ? (
             <div className="space-y-4">
-              <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4 sm:flex-row sm:items-center">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
                     <ArchiveIcon className="h-5 w-5" />
                   </div>
                   <div>
@@ -456,46 +453,46 @@ export default function DenahLemari() {
                   <p className="text-[11px] text-zinc-400 mt-0.5">Semua berkas saat ini telah dialokasikan ke lemari arsip fisik.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {filteredDocs.map((doc) => (
                     <div
                       key={doc.displayKey}
-                      className="group flex min-w-0 flex-col justify-between rounded-2xl border border-amber-200/80 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-amber-300 hover:shadow-lg hover:shadow-amber-950/5"
+                      className="group relative flex flex-col justify-between rounded-xl border border-amber-200/80 bg-white p-3.5 shadow-xs transition hover:border-amber-400 hover:shadow-md"
                     >
                       <div>
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                          <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
+                        <div className="flex items-center justify-between gap-1.5 mb-2">
+                          <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 text-[10px] font-bold">
                             Dikosongkan
                           </span>
-                          <span className="text-[11px] font-medium text-zinc-400">
+                          <span className="text-[10px] font-bold text-zinc-400">
                             Tahun {doc.tahun || doc.tanggal?.match(/\d{4}/)?.[0] || "—"}
                           </span>
                         </div>
 
-                        <h4 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-zinc-900">
+                        <h4 className="text-xs font-bold text-zinc-900 leading-snug line-clamp-2">
                           {doc.name}
                         </h4>
 
-                        <div className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
-                          <BuildingIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                        <div className="mt-2 flex items-center gap-1 text-[11px] text-zinc-500 truncate">
+                          <BuildingIcon className="h-3 w-3 shrink-0 text-zinc-400" />
                           <span className="truncate">{doc.instansi}</span>
                         </div>
 
-                        <p className="mt-3 text-sm font-bold text-zinc-900">
+                        <p className="mt-1.5 text-xs font-bold text-zinc-900">
                           {formatRupiah(doc.nominal)}
                         </p>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3">
-                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${doc.fileName ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
-                          {doc.fileName ? "Scan tersedia" : "Fisik saja"}
+                      <div className="mt-3 border-t border-zinc-100 pt-2.5 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-zinc-400">
+                          {doc.fileName ? "Scan Tersedia" : "Fisik Only"}
                         </span>
                         <button
                           type="button"
                           onClick={() => setActiveModalDoc(doc)}
-                          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                          className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-700 transition hover:bg-zinc-200"
                         >
-                          <EyeIcon className="h-3.5 w-3.5" />
+                          <EyeIcon className="h-3 w-3" />
                           <span>Detail</span>
                         </button>
                       </div>
@@ -513,78 +510,76 @@ export default function DenahLemari() {
               return (
                 <div
                   key={rak}
-                  className="rounded-2xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 sm:p-5"
+                  className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4 sm:p-5 transition hover:border-zinc-300"
                 >
                   {/* Shelf Header */}
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+                  <div className="mb-3 flex items-center justify-between border-b border-zinc-200/80 pb-2.5">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 font-mono text-xs font-bold text-violet-700">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-600 text-white font-mono text-xs font-black shadow-xs">
                         {rak.replace("Rak ", "R")}
                       </span>
-                      <div>
-                        <h3 className="text-sm font-bold text-zinc-900">{rak}</h3>
-                        <p className="text-xs text-zinc-500">{docsInThisRak.length} berkas tersimpan</p>
-                      </div>
+                      <h3 className="text-sm font-bold text-zinc-800">{rak}</h3>
+                      <span className="rounded-full bg-zinc-200/70 px-2 py-0.5 text-[11px] font-semibold text-zinc-600">
+                        {docsInThisRak.length} Ordner Tersimpan
+                      </span>
                     </div>
 
-                    <span className="text-xs font-medium text-zinc-400">
+                    <span className="text-[11px] text-zinc-400 font-medium">
                       {selectedLemari} &bull; {rak}
                     </span>
                   </div>
 
                   {/* Documents inside this shelf */}
                   {docsInThisRak.length === 0 ? (
-                    <div className="flex min-h-24 flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/60 px-4 py-5 text-center">
-                      <ArchiveIcon className="mb-2 h-5 w-5 text-zinc-300" />
-                      <p className="text-sm font-medium text-zinc-500">Rak ini masih kosong</p>
-                      <p className="mt-1 text-xs text-zinc-400">Belum ada berkas fisik yang ditempatkan di {rak}.</p>
+                    <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-white/60 text-xs text-zinc-400">
+                      Belum ada berkas fisik yang ditempatkan di {rak}.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {docsInThisRak.map((doc) => (
                         <div
                           key={doc.displayKey}
-                          className="group flex min-w-0 flex-col justify-between rounded-2xl border border-zinc-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-lg hover:shadow-violet-950/5"
+                          className="group relative flex flex-col justify-between rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs transition hover:border-red-300 hover:shadow-md hover:-translate-y-0.5"
                         >
                           <div>
                             {/* Top Spine: Nomor Berkas & Tahun */}
-                            <div className="mb-3 flex items-center justify-between gap-2">
-                              <span className="inline-flex items-center rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1 font-mono text-[11px] font-bold text-amber-800">
+                            <div className="flex items-center justify-between gap-1.5 mb-2">
+                              <span className="inline-flex items-center gap-1 rounded-md bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs">
                                 {doc.nomorArsip || "No. 01"}
                               </span>
-                              <span className="text-[11px] font-medium text-zinc-400">
+                              <span className="text-[10px] font-bold text-zinc-400">
                                 Tahun {doc.tahun || doc.tanggal?.match(/\d{4}/)?.[0] || "—"}
                               </span>
                             </div>
 
                             {/* Nama Berkas */}
-                            <h4 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-zinc-900 transition-colors group-hover:text-violet-700">
+                            <h4 className="text-xs font-bold text-zinc-900 leading-snug line-clamp-2 group-hover:text-red-600 transition-colors">
                               {doc.name}
                             </h4>
 
                             {/* Lembaga */}
-                            <div className="mt-2 flex min-w-0 items-center gap-1.5 text-xs text-zinc-500">
-                              <BuildingIcon className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                            <div className="mt-2 flex items-center gap-1 text-[11px] text-zinc-500 truncate">
+                              <BuildingIcon className="h-3 w-3 shrink-0 text-zinc-400" />
                               <span className="truncate">{doc.instansi}</span>
                             </div>
 
                             {/* Nominal */}
-                            <p className="mt-3 text-sm font-bold text-zinc-900">
+                            <p className="mt-1.5 text-xs font-bold text-zinc-900">
                               {formatRupiah(doc.nominal)}
                             </p>
                           </div>
 
                           {/* Card Footer: Action */}
-                          <div className="mt-4 flex items-center justify-between gap-2 border-t border-zinc-100 pt-3">
-                            <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${doc.fileName ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
-                              {doc.fileName ? "Scan tersedia" : "Fisik saja"}
+                          <div className="mt-3 border-t border-zinc-100 pt-2.5 flex items-center justify-between">
+                            <span className="text-[10px] font-semibold text-zinc-400">
+                              {doc.fileName ? "Scan Tersedia" : "Fisik Only"}
                             </span>
                             <button
                               type="button"
                               onClick={() => setActiveModalDoc(doc)}
-                              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                              className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 px-2.5 py-1 text-[11px] font-bold text-zinc-700 transition hover:bg-red-50 hover:text-red-700"
                             >
-                              <EyeIcon className="h-3.5 w-3.5" />
+                              <EyeIcon className="h-3 w-3" />
                               <span>Detail</span>
                             </button>
                           </div>
@@ -597,14 +592,16 @@ export default function DenahLemari() {
             })
           )}
         </div>
-      </section>
+      </div>
 
+      {/* ── Modal Detail Dokumen Fisik ───────────────────────────────── */}
       {activeModalDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 p-3 backdrop-blur-sm sm:p-4">
-          <div className="flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl">
-            <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-100 p-5 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/60 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-3xl border border-zinc-200 bg-white shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-100 p-6 pb-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 shadow-xs">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-xs">
                   <ArchiveIcon className="h-6 w-6" />
                 </div>
                 <div>
@@ -629,8 +626,10 @@ export default function DenahLemari() {
               </button>
             </div>
 
-            <div className="flex-1 space-y-3.5 overflow-y-auto p-5 text-sm sm:p-6">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
+            {/* Body Info */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-3.5 text-xs">
+              {/* Box Label Ordner Preview */}
+              <div className="rounded-2xl border border-zinc-200 bg-gradient-to-r from-zinc-50 to-white p-4">
                 <p className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
                   Label Punggung Ordner / Boks Arsip
                 </p>
@@ -646,15 +645,15 @@ export default function DenahLemari() {
                       ? "—"
                       : activeModalDoc.nomorArsip || "No. 01"}
                   </span>
-                  <div className="min-w-0">
-                    <p className="font-bold text-zinc-900">{activeModalDoc.name}</p>
-                    <p className="mt-1 text-xs text-zinc-500">{activeModalDoc.instansi} &bull; Tahun {activeModalDoc.tahun || activeModalDoc.tanggal?.match(/\d{4}/)?.[0] || "—"}</p>
+                  <div>
+                    <p className="font-bold text-zinc-900 text-sm">{activeModalDoc.name}</p>
+                    <p className="text-zinc-500">{activeModalDoc.instansi} &bull; Tahun {activeModalDoc.tahun || activeModalDoc.tanggal?.match(/\d{4}/)?.[0] || "—"}</p>
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Lemari Arsip</span>
                   <p className="mt-0.5 font-bold text-zinc-800">
                     {activeModalDoc.lemariArsip === "Dikosongkan"
@@ -662,7 +661,7 @@ export default function DenahLemari() {
                       : activeModalDoc.lemariArsip}
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Posisi Rak</span>
                   <p className="mt-0.5 font-bold text-zinc-800">
                     {activeModalDoc.lemariArsip === "Dikosongkan"
@@ -673,13 +672,13 @@ export default function DenahLemari() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Nominal Hibah</span>
                   <p className="mt-0.5 font-black text-zinc-900 text-sm">
                     {formatRupiah(activeModalDoc.nominal)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Bidang Teknis</span>
                   <p className="mt-0.5 font-bold text-zinc-800">
                     Bidang {activeModalDoc.bidangId} ({bidangInfo[activeModalDoc.bidangId].shortName})
@@ -688,7 +687,7 @@ export default function DenahLemari() {
               </div>
 
               {activeModalDoc.pic && (
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Penanggung Jawab / PIC</span>
                   <p className="mt-0.5 font-semibold text-zinc-800">
                     {activeModalDoc.pic} {activeModalDoc.noTelp ? `(${activeModalDoc.noTelp})` : ""}
@@ -697,24 +696,24 @@ export default function DenahLemari() {
               )}
 
               {activeModalDoc.catatan && (
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3">
+                <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3">
                   <span className="text-[10px] font-bold text-zinc-400 uppercase">Catatan Lokasi</span>
                   <p className="mt-0.5 text-zinc-600 italic">{activeModalDoc.catatan}</p>
                 </div>
               )}
 
               {activeModalDoc.fileDataUrl && (
-                <div className="mt-2 flex flex-col items-start justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3 sm:flex-row sm:items-center">
+                <div className="mt-2 flex items-center justify-between rounded-xl border border-red-200 bg-red-50/50 p-3">
                   <div className="flex items-center gap-2 truncate">
-                    <DocumentIcon className="h-4 w-4 text-amber-700 shrink-0" />
-                    <span className="text-xs font-semibold text-amber-900 truncate">
+                    <DocumentIcon className="h-4 w-4 text-red-600 shrink-0" />
+                    <span className="text-xs font-semibold text-red-900 truncate">
                       {activeModalDoc.fileName || "Scan Berkas"}
                     </span>
                   </div>
                   <a
                     href={activeModalDoc.fileDataUrl}
                     download={activeModalDoc.fileName || "scan-berkas.pdf"}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-violet-700 px-3 py-2 text-xs font-bold text-white shadow-xs transition hover:bg-violet-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/20"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-red-500 transition"
                   >
                     <DownloadIcon className="h-3.5 w-3.5" />
                     <span>Unduh Scan</span>
@@ -724,20 +723,20 @@ export default function DenahLemari() {
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-100 bg-zinc-50/70 px-5 py-4 sm:px-6">
+            <div className="flex shrink-0 justify-end gap-2 border-t border-zinc-100 bg-zinc-50/70 px-6 py-4">
               <button
                 type="button"
                 onClick={() => {
                   window.print();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-xs font-bold text-zinc-700 shadow-2xs transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-zinc-500/10"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-xs font-bold text-zinc-700 hover:bg-zinc-50 transition shadow-2xs"
               >
                 <span>Cetak Label Rak</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActiveModalDoc(null)}
-                className="rounded-xl bg-violet-700 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-700/20 transition hover:bg-violet-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-violet-500/20"
+                className="rounded-xl bg-red-600 px-5 py-2 text-xs font-bold text-white hover:bg-red-500 shadow-md shadow-red-600/20 transition"
               >
                 Tutup
               </button>
